@@ -47,6 +47,15 @@ pipeline {
                 }
             }
         }
+
+        stage('Generate Test Summary') {
+            steps {
+                bat '''
+                cd /d "%WORKSPACE%"
+                %PYTHON_EXE% utils\\print_summary.py
+                '''
+            }
+        }
     }
 
     post {
@@ -62,7 +71,16 @@ pipeline {
             slackSend(
                 channel: "${SLACK_CHANNEL}",
                 color: 'good',
-                message: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}\nAllure Report: ${env.BUILD_URL}allure"
+                message: """✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+
+Build URL:
+${env.BUILD_URL}
+
+Allure Report:
+${env.BUILD_URL}allure
+
+Test execution completed successfully.
+Check Jenkins console for detailed summary."""
             )
         }
 
@@ -70,7 +88,16 @@ pipeline {
             slackSend(
                 channel: "${SLACK_CHANNEL}",
                 color: 'danger',
-                message: "❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}\nAllure Report: ${env.BUILD_URL}allure"
+                message: """❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+
+Build URL:
+${env.BUILD_URL}
+
+Allure Report:
+${env.BUILD_URL}allure
+
+Some tests failed after rerun.
+Check Jenkins console + Allure report."""
             )
         }
     }
