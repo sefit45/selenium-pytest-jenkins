@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        SLACK_CHANNEL = '#all-qa-automation-lab'
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -12,48 +8,36 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Full Test Suite') {
             steps {
                 bat '''
                 cd /d "%WORKSPACE%"
+                
                 if exist allure-results rmdir /s /q allure-results
-                C:\\PythonProjects\\.venv\\Scripts\\python.exe -m pytest Tests -v --alluredir=allure-results
+                if exist failed_tests.txt del failed_tests.txt
+
+                C:\\PythonProjects\\.venv\\Scripts\\python.exe -m pytest Tests -v ^
+                --alluredir=allure-results ^
+                --last-failed-no-failures all ^
+                --cache-clear || exit /b 0
+                '''
+            }
+        }
+
+        stage('Rerun Failed Tests') {
+            steps {
+                bat '''
+                cd /d "%WORKSPACE%"
+
+                C:\\PythonProjects\\.venv\\Scripts\\python.exe -m pytest Tests -v ^
+                --alluredir=allure-results ^
+                --last-failed || exit /b 0
                 '''
             }
         }
     }
 
     post {
-        success {
-            slackSend(
-                channel: env.SLACK_CHANNEL,
-                color: 'good',
-                message: """✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-Allure Report: ${env.BUILD_URL}allure"""
-            )
-        }
-
-        failure {
-            slackSend(
-                channel: env.SLACK_CHANNEL,
-                color: 'danger',
-                message: """❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-Check console output and Allure report."""
-            )
-        }
-
-        unstable {
-            slackSend(
-                channel: env.SLACK_CHANNEL,
-                color: 'warning',
-                message: """⚠️ UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-Allure Report: ${env.BUILD_URL}allure"""
-            )
-        }
-
         always {
             allure([
                 includeProperties: false,
