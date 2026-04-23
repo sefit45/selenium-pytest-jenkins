@@ -13,25 +13,38 @@ pipeline {
             }
         }
 
-        stage('Run Full Test Suite') {
+        stage('Run Tests') {
             steps {
-                bat """
-                cd /d "%WORKSPACE%"
-                if exist allure-results rmdir /s /q allure-results
-                ${PYTHON_EXE} -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear
-                """
-            }
-        }
+                script {
+                    bat '''
+                    cd /d "%WORKSPACE%"
+                    if exist allure-results rmdir /s /q allure-results
+                    '''
 
-        stage('Rerun Failed Tests') {
-            when {
-                expression { currentBuild.currentResult == 'FAILURE' }
-            }
-            steps {
-                bat """
-                cd /d "%WORKSPACE%"
-                ${PYTHON_EXE} -m pytest Tests -v --alluredir=allure-results --last-failed
-                """
+                    def firstRunStatus = bat(
+                        script: '''
+                        cd /d "%WORKSPACE%"
+                        %PYTHON_EXE% -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear
+                        ''',
+                        returnStatus: true
+                    )
+
+                    if (firstRunStatus != 0) {
+                        echo 'Some tests failed. Running failed tests again...'
+
+                        def rerunStatus = bat(
+                            script: '''
+                            cd /d "%WORKSPACE%"
+                            %PYTHON_EXE% -m pytest Tests -v --lf --alluredir=allure-results
+                            ''',
+                            returnStatus: true
+                        )
+
+                        if (rerunStatus != 0) {
+                            error('Tests failed after rerun')
+                        }
+                    }
+                }
             }
         }
     }
@@ -47,32 +60,17 @@ pipeline {
 
         success {
             slackSend(
-                channel: env.SLACK_CHANNEL,
+                channel: "${SLACK_CHANNEL}",
                 color: 'good',
-                message: """✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-Allure Report: ${env.BUILD_URL}allure"""
+                message: "✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}\nAllure Report: ${env.BUILD_URL}allure"
             )
         }
 
         failure {
             slackSend(
-                channel: env.SLACK_CHANNEL,
+                channel: "${SLACK_CHANNEL}",
                 color: 'danger',
-                message: """❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-Allure Report: ${env.BUILD_URL}allure
-Please review console logs and failed tests."""
-            )
-        }
-
-        unstable {
-            slackSend(
-                channel: env.SLACK_CHANNEL,
-                color: 'warning',
-                message: """⚠️ UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
-Build URL: ${env.BUILD_URL}
-Allure Report: ${env.BUILD_URL}allure"""
+                message: "❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}\nBuild URL: ${env.BUILD_URL}\nAllure Report: ${env.BUILD_URL}allure"
             )
         }
     }
