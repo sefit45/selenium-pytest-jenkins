@@ -28,7 +28,21 @@ def driver(request):
     )
 
     driver.implicitly_wait(5)
+
     yield driver
+
+    if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
+        test_name = request.node.name
+        screenshot_path = take_screenshot(driver, test_name)
+
+        if os.path.exists(screenshot_path):
+            with open(screenshot_path, "rb") as image_file:
+                allure.attach(
+                    image_file.read(),
+                    name=f"{test_name}_screenshot",
+                    attachment_type=allure.attachment_type.PNG
+                )
+
     driver.quit()
 
 
@@ -36,18 +50,4 @@ def driver(request):
 def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
-
-    if report.when == "call" and report.failed:
-        driver = item.funcargs.get("driver", None)
-
-        if driver:
-            test_name = item.name
-            screenshot_path = take_screenshot(driver, test_name)
-
-            if os.path.exists(screenshot_path):
-                with open(screenshot_path, "rb") as image_file:
-                    allure.attach(
-                        image_file.read(),
-                        name=test_name,
-                        attachment_type=allure.attachment_type.PNG
-                    )
+    setattr(item, "rep_" + report.when, report)
