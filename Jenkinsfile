@@ -18,7 +18,7 @@ pipeline {
                 bat """
                 cd /d "%WORKSPACE%"
                 if exist allure-results rmdir /s /q allure-results
-                ${PYTHON_EXE} -m pytest Tests -v --alluredir=allure-results --cache-clear
+                ${PYTHON_EXE} -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear
                 """
             }
         }
