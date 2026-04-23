@@ -9,7 +9,7 @@ def test_valid_login(driver):
 
     flash_message = login_page.get_flash_message()
 
-    assert "You logged into a secure area!" in flash_message
+    assert "WRONG_TEXT" in flash_message
 
 
 def test_invalid_login(driver):
