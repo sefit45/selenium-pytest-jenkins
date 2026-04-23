@@ -26,7 +26,7 @@ jobs:
 
       - name: Start Selenium Grid with Docker Compose
         run: |
-          docker compose -f docker-compose.yml up -d
+          docker compose -f Tests/docker-compose.yml up -d
 
       - name: Wait for Grid to be ready
         run: |
