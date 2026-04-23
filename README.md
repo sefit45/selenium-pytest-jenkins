@@ -8,6 +8,7 @@ The framework covers UI automation, API automation, authentication flows, databa
 
 ---
 
+
 ## Key Features
 
 ### UI Automation
