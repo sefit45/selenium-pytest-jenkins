@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        SLACK_CHANNEL = '#all-qa-automation-lab'
+        PYTHON_EXE = 'C:\\PythonProjects\\.venv\\Scripts\\python.exe'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -10,29 +15,23 @@ pipeline {
 
         stage('Run Full Test Suite') {
             steps {
-                bat '''
+                bat """
                 cd /d "%WORKSPACE%"
-                
                 if exist allure-results rmdir /s /q allure-results
-                if exist failed_tests.txt del failed_tests.txt
-
-                C:\\PythonProjects\\.venv\\Scripts\\python.exe -m pytest Tests -v ^
-                --alluredir=allure-results ^
-                --last-failed-no-failures all ^
-                --cache-clear || exit /b 0
-                '''
+                ${PYTHON_EXE} -m pytest Tests -v --alluredir=allure-results --cache-clear
+                """
             }
         }
 
         stage('Rerun Failed Tests') {
+            when {
+                expression { currentBuild.currentResult == 'FAILURE' }
+            }
             steps {
-                bat '''
+                bat """
                 cd /d "%WORKSPACE%"
-
-                C:\\PythonProjects\\.venv\\Scripts\\python.exe -m pytest Tests -v ^
-                --alluredir=allure-results ^
-                --last-failed || exit /b 0
-                '''
+                ${PYTHON_EXE} -m pytest Tests -v --alluredir=allure-results --last-failed
+                """
             }
         }
     }
@@ -44,6 +43,37 @@ pipeline {
                 jdk: '',
                 results: [[path: 'allure-results']]
             ])
+        }
+
+        success {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'good',
+                message: """✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+Allure Report: ${env.BUILD_URL}allure"""
+            )
+        }
+
+        failure {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'danger',
+                message: """❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+Allure Report: ${env.BUILD_URL}allure
+Please review console logs and failed tests."""
+            )
+        }
+
+        unstable {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'warning',
+                message: """⚠️ UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+Build URL: ${env.BUILD_URL}
+Allure Report: ${env.BUILD_URL}allure"""
+            )
         }
     }
 }
