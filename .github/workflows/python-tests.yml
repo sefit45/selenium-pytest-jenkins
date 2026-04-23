@@ -24,6 +24,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Start Selenium Grid with Docker Compose
+        run: |
+          docker compose -f Tests/docker-compose.yml up -d
+
+      - name: Wait for Grid to be ready
+        run: |
+          sleep 15
+
       - name: Run tests
         run: |
           pytest Tests -v
+
+      - name: Show Docker containers
+        if: always()
+        run: |
+          docker ps
+
+      - name: Show Selenium Hub logs
+        if: always()
+        run: |
+          docker logs selenium-hub || true
+
+      - name: Show Chrome node logs
+        if: always()
+        run: |
+          docker logs chrome-node || true
+
+      - name: Show Firefox node logs
+        if: always()
+        run: |
+          docker logs firefox-node || true
