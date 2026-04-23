@@ -1,4 +1,4 @@
-from utils.report_summary import generate_test_summary
+from report_summary import generate_test_summary
 
 
 summary = generate_test_summary()
