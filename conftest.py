@@ -7,9 +7,20 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from utils.screenshot import take_screenshot
 
 
+SELENIUM_REMOTE_URL = os.getenv(
+    "SELENIUM_REMOTE_URL",
+    "http://localhost:4444/wd/hub"
+)
+
+
+def pytest_generate_tests(metafunc):
+    if "driver" in metafunc.fixturenames:
+        metafunc.parametrize("driver", ["chrome", "firefox"], indirect=True)
+
+
 @pytest.fixture
 def driver(request):
-    browser = getattr(request, "param", "chrome")
+    browser = request.param
 
     if browser == "chrome":
         options = ChromeOptions()
@@ -23,7 +34,7 @@ def driver(request):
         raise Exception(f"Browser {browser} is not supported")
 
     driver = webdriver.Remote(
-        command_executor="http://localhost:4444/wd/hub",
+        command_executor=SELENIUM_REMOTE_URL,
         options=options
     )
 

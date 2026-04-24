@@ -1,12 +1,15 @@
+version: '3'
+
 services:
+
   selenium-hub:
-    image: selenium/hub:latest
+    image: selenium/hub:4.21.0
     container_name: selenium-hub
     ports:
       - "4444:4444"
 
   chrome:
-    image: selenium/node-chrome:latest
+    image: selenium/node-chrome:4.21.0
     container_name: chrome-node
     shm_size: 2gb
     depends_on:
@@ -15,11 +18,9 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
 
   firefox:
-    image: selenium/node-firefox:latest
+    image: selenium/node-firefox:4.21.0
     container_name: firefox-node
     shm_size: 2gb
     depends_on:
@@ -28,5 +29,15 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - SE_NODE_MAX_SESSIONS=2
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+
+  test-runner:
+    build: .
+    container_name: pytest-runner
+    depends_on:
+      - selenium-hub
+      - chrome
+      - firefox
+    environment:
+      - SELENIUM_REMOTE_URL=http://selenium-hub:4444/wd/hub
+    volumes:
+      - .:/app
