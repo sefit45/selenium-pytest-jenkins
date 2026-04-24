@@ -21,3 +21,15 @@ spec:
             - containerPort: 4444
             - containerPort: 4442
             - containerPort: 4443
+          livenessProbe:
+            httpGet:
+              path: /wd/hub/status
+              port: 4444
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /wd/hub/status
+              port: 4444
+            initialDelaySeconds: 20
+            periodSeconds: 5
