@@ -1,6 +1,8 @@
+import pytest
 import sqlite3
 
-
+@pytest.mark.db
+@pytest.mark.regression
 def test_database_validation():
     connection = sqlite3.connect("customers.db")
     cursor = connection.cursor()

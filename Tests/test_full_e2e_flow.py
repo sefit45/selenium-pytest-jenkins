@@ -1,7 +1,10 @@
+import pytest
 import requests
 import sqlite3
 
-
+@pytest.mark.e2e
+@pytest.mark.regression
+@pytest.mark.critical
 def test_full_e2e_flow():
     # API Login
     login_url = "https://dummyjson.com/auth/login"

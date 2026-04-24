@@ -1,6 +1,9 @@
+import pytest
 import requests
 
-
+@pytest.mark.api
+@pytest.mark.regression
+@pytest.mark.negative
 def test_login_with_wrong_password():
     url = "https://dummyjson.com/auth/login"
 

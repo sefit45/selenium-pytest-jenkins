@@ -1,6 +1,8 @@
+import pytest
 import requests
 
-
+@pytest.mark.api
+@pytest.mark.smoke
 def test_get_posts():
     url = "https://jsonplaceholder.typicode.com/posts"
 
@@ -11,6 +13,9 @@ def test_get_posts():
     assert response.status_code == 200
     assert len(response.json()) > 0
     assert response.json()[0]["id"] == 1
+
+@pytest.mark.api
+@pytest.mark.regression
 
 def test_create_post():
     url = "https://jsonplaceholder.typicode.com/posts"

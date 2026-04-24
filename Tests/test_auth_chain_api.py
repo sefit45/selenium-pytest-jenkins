@@ -1,6 +1,9 @@
+import pytest
 import requests
 
-
+@pytest.mark.api
+@pytest.mark.regression
+@pytest.mark.critical
 def test_login_and_get_current_user():
     login_url = "https://dummyjson.com/auth/login"
 

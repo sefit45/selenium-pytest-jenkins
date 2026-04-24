@@ -1,5 +1,9 @@
+import pytest
 from pages.login_page import LoginPage
 
+@pytest.mark.smoke
+@pytest.mark.ui
+@pytest.mark.critical
 
 def test_valid_login(driver):
     login_page = LoginPage(driver)
@@ -11,6 +15,8 @@ def test_valid_login(driver):
 
     assert "You logged into a secure area!" in flash_message
 
+@pytest.mark.regression
+@pytest.mark.ui
 
 def test_invalid_login(driver):
     login_page = LoginPage(driver)

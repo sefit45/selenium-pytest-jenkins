@@ -1,6 +1,9 @@
+import pytest
 import requests
 
-
+@pytest.mark.api
+@pytest.mark.smoke
+@pytest.mark.critical
 def test_login_and_token():
     url = "https://dummyjson.com/auth/login"
 
