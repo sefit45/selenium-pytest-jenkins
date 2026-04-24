@@ -5,3 +5,4 @@ allure-results/
 screenshots/
 *.db
 report.html
+qa_execution_history.json
