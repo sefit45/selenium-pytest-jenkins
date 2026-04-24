@@ -140,3 +140,7 @@ This project includes an advanced API automation framework with BaseAPI, UsersAP
 ## Hotfix Example Defect#17564
 
 This branch simulates a production hotfix flow.
+
+## Main Branch Update
+
+This simulates another developer change on main.
