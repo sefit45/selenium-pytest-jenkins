@@ -133,3 +133,6 @@ This framework significantly improves regression coverage, reduces manual testin
 * Cloud Execution
 * Production-Level Scaling
 
+## API Framework
+
+This project includes an advanced API automation framework with BaseAPI, UsersAPI, AuthAPI, TokenManager, PayloadBuilder, ResponseValidator, and API + DB validation flows.
