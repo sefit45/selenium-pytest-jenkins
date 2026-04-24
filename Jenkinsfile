@@ -1,6 +1,22 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'TEST_SUITE',
+            choices: [
+                'smoke',
+                'regression',
+                'api',
+                'ui',
+                'db',
+                'e2e',
+                'all'
+            ],
+            description: 'Select which test suite to execute'
+        )
+    }
+
     environment {
         SLACK_CHANNEL = '#all-qa-automation-lab'
         PYTHON_EXE = 'C:\\PythonProjects\\.venv\\Scripts\\python.exe'
@@ -9,7 +25,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/sefit45/selenium-pytest-jenkins.git'
+                git branch: 'main',
+                    url: 'https://github.com/sefit45/selenium-pytest-jenkins.git'
             }
         }
 
@@ -21,11 +38,21 @@ pipeline {
                     if exist allure-results rmdir /s /q allure-results
                     '''
 
+                    def pytestCommand = ""
+
+                    if (params.TEST_SUITE == "all") {
+                        pytestCommand = "%PYTHON_EXE% -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear"
+                    } else {
+                        pytestCommand = "%PYTHON_EXE% -m pytest Tests -v -m ${params.TEST_SUITE} -n 2 --alluredir=allure-results --cache-clear"
+                    }
+
+                    echo "Running: ${pytestCommand}"
+
                     def firstRunStatus = bat(
-                        script: '''
+                        script: """
                         cd /d "%WORKSPACE%"
-                        %PYTHON_EXE% -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear
-                        ''',
+                        ${pytestCommand}
+                        """,
                         returnStatus: true
                     )
 
@@ -75,7 +102,8 @@ pipeline {
                 results: [[path: 'allure-results']]
             ])
 
-            archiveArtifacts artifacts: 'executive_qa_dashboard.html', allowEmptyArchive: true
+            archiveArtifacts artifacts: 'executive_qa_dashboard.html',
+                allowEmptyArchive: true
         }
 
         success {
@@ -83,6 +111,9 @@ pipeline {
                 channel: "${SLACK_CHANNEL}",
                 color: 'good',
                 message: """✅ SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}
+
+Suite Executed:
+${params.TEST_SUITE}
 
 Build URL:
 ${env.BUILD_URL}
@@ -93,8 +124,7 @@ ${env.BUILD_URL}allure
 Executive QA Dashboard:
 ${env.BUILD_URL}artifact/executive_qa_dashboard.html
 
-Test execution completed successfully.
-Check Jenkins console for detailed summary."""
+Execution completed successfully."""
             )
         }
 
@@ -104,6 +134,9 @@ Check Jenkins console for detailed summary."""
                 color: 'danger',
                 message: """❌ FAILURE: ${env.JOB_NAME} #${env.BUILD_NUMBER}
 
+Suite Executed:
+${params.TEST_SUITE}
+
 Build URL:
 ${env.BUILD_URL}
 
@@ -113,8 +146,8 @@ ${env.BUILD_URL}allure
 Executive QA Dashboard:
 ${env.BUILD_URL}artifact/executive_qa_dashboard.html
 
-Some tests failed after rerun.
-Check Jenkins console + Allure report."""
+Tests failed after rerun.
+Check Jenkins + Allure report."""
             )
         }
     }
