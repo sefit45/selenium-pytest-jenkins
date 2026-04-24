@@ -8,7 +8,6 @@ The framework covers UI automation, API automation, authentication flows, databa
 
 ---
 
-
 ## Key Features
 
 ### UI Automation
@@ -79,68 +78,3 @@ PythonProjects/
 ├── customers.db
 ├── conftest.py
 └── requirements.txt
-```
-
----
-
-## Technologies Used
-
-* Python
-* Selenium WebDriver
-* Pytest
-* Requests
-* Jenkins
-* GitHub
-* Git
-* Allure Reports
-* HTML Reports
-* SQLite
-* SQL
-* Page Object Model (POM)
-* CI/CD
-* API Testing
-* Jenkins Pipelines
-
----
-
-## Sample E2E Flow
-
-```text
-UI / API Login
-→ Token Extraction
-→ Protected API Validation
-→ Database Verification
-→ Reporting
-→ Jenkins Execution
-```
-
----
-
-## Business Value
-
-This framework significantly improves regression coverage, reduces manual testing effort, improves release confidence, accelerates defect detection, and provides enterprise-level visibility into execution quality and production readiness.
-
----
-
-## Future Enhancements
-
-* Docker Integration
-* Selenium Grid
-* Parallel Execution
-* Advanced Jenkins Pipelines
-* Email Notifications
-* Slack Alerts
-* Cloud Execution
-* Production-Level Scaling
-
-## API Framework
-
-This project includes an advanced API automation framework with BaseAPI, UsersAPI, AuthAPI, TokenManager, PayloadBuilder, ResponseValidator, and API + DB validation flows.
-
-## Hotfix Example Defect#17564
-
-This branch simulates a production hotfix flow.
-
-## Main Branch Update
-
-This simulates another developer change on main.
