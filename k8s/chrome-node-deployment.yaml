@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chrome-node
+  labels:
+    app: chrome-node
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chrome-node
+  template:
+    metadata:
+      labels:
+        app: chrome-node
+    spec:
+      containers:
+        - name: chrome-node
+          image: selenium/node-chrome:4.21.0
+          env:
+            - name: SE_EVENT_BUS_HOST
+              value: "selenium-hub-service"
+            - name: SE_EVENT_BUS_PUBLISH_PORT
+              value: "4442"
+            - name: SE_EVENT_BUS_SUBSCRIBE_PORT
+              value: "4443"
+          resources:
+            limits:
+              memory: "2Gi"
+            requests:
+              memory: "1Gi"

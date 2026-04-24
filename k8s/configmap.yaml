@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: automation-config
+data:
+  environment: "kubernetes"
+  selenium_remote_url: "http://selenium-hub-service:4444/wd/hub"
+  parallel_workers: "2"
+  test_suite: "regression"

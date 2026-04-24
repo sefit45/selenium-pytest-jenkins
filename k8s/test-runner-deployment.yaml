@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pytest-runner
+  labels:
+    app: pytest-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pytest-runner
+  template:
+    metadata:
+      labels:
+        app: pytest-runner
+    spec:
+      containers:
+        - name: pytest-runner
+          image: selenium-pytest-jenkins-test-runner:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SELENIUM_REMOTE_URL
+              value: "http://selenium-hub-service:4444/wd/hub"
+            - name: ENVIRONMENT
+              value: "kubernetes"
+            - name: REQRES_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: reqres-api-secret
+                  key: api-key
+          command: ["pytest"]
+          args: ["Tests", "-v", "-n", "2", "--alluredir=allure-results"]
