@@ -38,15 +38,23 @@ pipeline {
                     if exist allure-results rmdir /s /q allure-results
                     '''
 
-                    def pytestCommand = ""
+                    def selectedSuite = params.TEST_SUITE
 
-                    if (params.TEST_SUITE == "all") {
-                        pytestCommand = "%PYTHON_EXE% -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear"
-                    } else {
-                        pytestCommand = "%PYTHON_EXE% -m pytest Tests -v -m ${params.TEST_SUITE} -n 2 --alluredir=allure-results --cache-clear"
+                    if (currentBuild.getBuildCauses().toString().contains("TimerTrigger")) {
+                        echo "Scheduled nightly build detected - running regression suite"
+                        selectedSuite = "regression"
                     }
 
-                    echo "Running: ${pytestCommand}"
+                    def pytestCommand = ""
+
+                    if (selectedSuite == "all") {
+                        pytestCommand = "%PYTHON_EXE% -m pytest Tests -v -n 2 --alluredir=allure-results --cache-clear"
+                    } else {
+                        pytestCommand = "%PYTHON_EXE% -m pytest Tests -v -m ${selectedSuite} -n 2 --alluredir=allure-results --cache-clear"
+                    }
+
+                    echo "Running suite: ${selectedSuite}"
+                    echo "Command: ${pytestCommand}"
 
                     def firstRunStatus = bat(
                         script: """
