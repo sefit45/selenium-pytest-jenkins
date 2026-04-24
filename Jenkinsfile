@@ -56,6 +56,15 @@ pipeline {
                 '''
             }
         }
+
+        stage('Generate Executive QA Dashboard') {
+            steps {
+                bat '''
+                cd /d "%WORKSPACE%"
+                %PYTHON_EXE% utils\\executive_report.py
+                '''
+            }
+        }
     }
 
     post {
@@ -65,6 +74,8 @@ pipeline {
                 jdk: '',
                 results: [[path: 'allure-results']]
             ])
+
+            archiveArtifacts artifacts: 'executive_qa_dashboard.html', allowEmptyArchive: true
         }
 
         success {
@@ -78,6 +89,9 @@ ${env.BUILD_URL}
 
 Allure Report:
 ${env.BUILD_URL}allure
+
+Executive QA Dashboard:
+${env.BUILD_URL}artifact/executive_qa_dashboard.html
 
 Test execution completed successfully.
 Check Jenkins console for detailed summary."""
@@ -95,6 +109,9 @@ ${env.BUILD_URL}
 
 Allure Report:
 ${env.BUILD_URL}allure
+
+Executive QA Dashboard:
+${env.BUILD_URL}artifact/executive_qa_dashboard.html
 
 Some tests failed after rerun.
 Check Jenkins console + Allure report."""
